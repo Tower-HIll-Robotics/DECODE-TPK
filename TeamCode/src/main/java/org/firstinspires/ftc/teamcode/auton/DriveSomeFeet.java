@@ -44,10 +44,8 @@ public class DriveSomeFeet extends LinearOpMode {
             Thread.currentThread().interrupt();
         }
 
-        chassis.setPose(0, 0, 0);
-
-        chassis.driveToPose(0, 48, 0, 5000);
-
+        chassis.setPose(0, 0, 90);
+        chassis.driveToPose(0, 48, 90, 5000);
         drivetrain.stop();
         chassis.stop();
     }

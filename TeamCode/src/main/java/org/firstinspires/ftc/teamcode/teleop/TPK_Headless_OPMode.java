@@ -33,6 +33,8 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.util.ElapsedTime;
+import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
+import org.firstinspires.ftc.teamcode.GoBildaPinpointDriver;
 
 @TeleOp(name="TPK Headless OpMode", group="Linear OpMode")
 public class TPK_Headless_OPMode extends LinearOpMode {
@@ -57,6 +59,7 @@ public class TPK_Headless_OPMode extends LinearOpMode {
         backRightDrive = hardwareMap.get(DcMotor.class, "back_right_drive");
         leftFlywheel = hardwareMap.get(DcMotor.class, "left_flywheel");
         rightFlywheel = hardwareMap.get(DcMotor.class, "right_flywheel");
+        GoBildaPinpointDriver pinpoint = hardwareMap.get(GoBildaPinpointDriver.class, "pinpoint");
 
         frontLeftDrive.setDirection(DcMotor.Direction.REVERSE);
         backLeftDrive.setDirection(DcMotor.Direction.FORWARD);
@@ -64,6 +67,9 @@ public class TPK_Headless_OPMode extends LinearOpMode {
         backRightDrive.setDirection(DcMotor.Direction.REVERSE);
         leftFlywheel.setDirection(DcMotor.Direction.REVERSE);
         rightFlywheel.setDirection(DcMotor.Direction.FORWARD);
+
+        pinpoint.recalibrateIMU();
+        pinpoint.setHeading(0.0, AngleUnit.RADIANS);
 
         // Wait for the game to start (driver presses START)
         telemetry.addData("Status", "Initialized");
@@ -76,17 +82,21 @@ public class TPK_Headless_OPMode extends LinearOpMode {
         while (opModeIsActive()) {
             double max;
 
-            // POV Mode uses left joystick to go forward & strafe, and right joystick to rotate.
-            double axial   = -gamepad1.left_stick_y;  // Note: pushing stick forward gives negative value
-            double lateral =  gamepad1.left_stick_x;
-            double yaw     =  gamepad1.right_stick_x;
+            // Get current values
+            double heading = pinpoint.getHeading(AngleUnit.RADIANS);
+            double lsy     = -gamepad1.left_stick_y;
+            double lsx     =  gamepad1.left_stick_x;
+            double rsx     =  gamepad1.right_stick_x;
+
+            // Rotate joystick input
+            double TX = (lsx * Math.cos(heading)) - (lsy * Math.sin(heading));
+            double TY = (lsx * Math.sin(heading)) + (lsy * Math.cos(heading));
 
             // Combine the joystick requests for each axis-motion to determine each wheel's power.
-            // Set up a variable for each drive wheel to save the power level for telemetry.
-            double frontLeftPower  = axial + lateral + yaw;
-            double frontRightPower = axial - lateral - yaw;
-            double backLeftPower   = axial - lateral + yaw;
-            double backRightPower  = axial + lateral - yaw;
+            double frontLeftPower  = TX + TY + rsx;
+            double frontRightPower = TX - TY - rsx;
+            double backLeftPower   = TX - TY + rsx;
+            double backRightPower  = TX + TY - rsx;
 
             // Normalize the values so no wheel power exceeds 100%
             // This ensures that the robot maintains the desired motion.

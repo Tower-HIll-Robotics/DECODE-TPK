@@ -19,6 +19,7 @@ public class PIDController {
         this.kP = kP;
         this.kI = kI;
         this.kD = kD;
+        lastTime = System.nanoTime();
     }
 
     public void resetIntegral() {

@@ -33,9 +33,18 @@ public class Odometry {
     public float[] getPose() {
         Pose2D pos = pinpoint.getPosition();
 
+        if (pos == null) {
+            return new float[] {(float) x, (float) y, (float) theta};
+        }
+
         double xInches = pos.getX(DistanceUnit.INCH);
         double yInches = pos.getY(DistanceUnit.INCH);
         double headingDeg = pos.getHeading(AngleUnit.DEGREES);
+
+        this.x = xInches;
+        this.y = yInches;
+        this.theta = headingDeg;
+        this.position = pos;
 
         return new float[] {(float) xInches, (float) yInches, (float) headingDeg};
     }
@@ -43,5 +52,9 @@ public class Odometry {
     public void setPose(double x, double y, double theta) {
         Pose2D pose = new Pose2D(DistanceUnit.INCH, x, y, AngleUnit.DEGREES, theta);
         pinpoint.setPosition(pose);
+        this.x = x;
+        this.y = y;
+        this.theta = theta;
+        this.position = pose;
     }
 }

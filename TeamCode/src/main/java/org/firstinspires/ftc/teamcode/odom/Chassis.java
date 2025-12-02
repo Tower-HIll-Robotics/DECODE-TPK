@@ -25,8 +25,8 @@ public class Chassis {
     public Chassis(Drivetrain drivetrain, Odometry odometry) {
         this.drivetrain = drivetrain;
         this.odometry = odometry;
-        this.lateralPID = new PIDController(1, 0, 0);
-        this.angularPID = new PIDController(1, 0, 0);
+        this.lateralPID = new PIDController(0.01, 0, 0);
+        this.angularPID = new PIDController(0.01, 0, 0);
     }
 
     public void initialize() {
@@ -47,6 +47,14 @@ public class Chassis {
 
     public void stop() {
         running = false;
+        if (odometryThread != null) {
+            odometryThread.interrupt();
+            try {
+                odometryThread.join(200);
+            } catch (InterruptedException ignored) {
+                Thread.currentThread().interrupt();
+            }
+        }
     }
 
     public void setPose(float x, float y, float theta) {
@@ -85,6 +93,13 @@ public class Chassis {
             } else {
                 drivetrain.drive(drivePower, 0, turnPower);
             }
+
+            try {
+                Thread.sleep(10); // avoid busy spin
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                break;
+            }
         }
 
         drivetrain.stop();
@@ -102,6 +117,13 @@ public class Chassis {
 
             float turnPower = (float)angularPID.calculate(error);
             drivetrain.drive(0, 0, turnPower);
+
+            try {
+                Thread.sleep(10); // avoid busy spin
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                break;
+            }
         }
 
         drivetrain.stop();
