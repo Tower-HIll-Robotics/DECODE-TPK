@@ -21,6 +21,11 @@ public class DriveSomeFeet extends LinearOpMode {
         DcMotor backLeft = hardwareMap.get(DcMotor.class, "back_left_drive");
         DcMotor backRight = hardwareMap.get(DcMotor.class, "back_right_drive");
 
+        frontLeft.setDirection(DcMotor.Direction.REVERSE);
+        backLeft.setDirection(DcMotor.Direction.FORWARD);
+        frontRight.setDirection(DcMotor.Direction.REVERSE);
+        backRight.setDirection(DcMotor.Direction.REVERSE);
+
         drivetrain = new Drivetrain(frontLeft, frontRight, backLeft, backRight);
         odometry = new Odometry(hardwareMap);
         chassis = new Chassis(drivetrain, odometry);

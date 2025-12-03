@@ -29,12 +29,12 @@
 
 package org.firstinspires.ftc.teamcode.teleop;
 
+import com.qualcomm.hardware.gobilda.GoBildaPinpointDriver;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
-import org.firstinspires.ftc.teamcode.GoBildaPinpointDriver;
 
 @TeleOp(name="TPK Headless OpMode", group="Linear OpMode")
 public class TPK_Headless_OPMode extends LinearOpMode {
@@ -48,6 +48,8 @@ public class TPK_Headless_OPMode extends LinearOpMode {
     private DcMotor leftFlywheel = null;
     private DcMotor rightFlywheel = null;
 
+    private GoBildaPinpointDriver pinpoint = null;
+
     @Override
     public void runOpMode() {
 
@@ -59,17 +61,31 @@ public class TPK_Headless_OPMode extends LinearOpMode {
         backRightDrive = hardwareMap.get(DcMotor.class, "back_right_drive");
         leftFlywheel = hardwareMap.get(DcMotor.class, "left_flywheel");
         rightFlywheel = hardwareMap.get(DcMotor.class, "right_flywheel");
-        GoBildaPinpointDriver pinpoint = hardwareMap.get(GoBildaPinpointDriver.class, "pinpoint");
+        pinpoint = hardwareMap.get(GoBildaPinpointDriver.class, "pinpoint");
+
+        if (pinpoint == null) {
+            telemetry.addData("Pinpoint", "NOT FOUND in hardwareMap");
+            telemetry.update();
+            return;
+        }
 
         frontLeftDrive.setDirection(DcMotor.Direction.REVERSE);
         backLeftDrive.setDirection(DcMotor.Direction.FORWARD);
-        frontRightDrive.setDirection(DcMotor.Direction.FORWARD);
+        frontRightDrive.setDirection(DcMotor.Direction.REVERSE);
         backRightDrive.setDirection(DcMotor.Direction.REVERSE);
         leftFlywheel.setDirection(DcMotor.Direction.REVERSE);
         rightFlywheel.setDirection(DcMotor.Direction.FORWARD);
 
-        pinpoint.recalibrateIMU();
-        pinpoint.setHeading(0.0, AngleUnit.RADIANS);
+        // Reset the pinpoint position and IMU (recommended by the sample) instead of
+        // calling recalibrateIMU()/setHeading which may be asynchronous.
+        try {
+            pinpoint.resetPosAndIMU();
+            // give the driver a short moment to settle / calibrate
+            sleep(300);
+        } catch (Exception e) {
+            telemetry.addData("Pinpoint reset", e.getClass().getSimpleName());
+            telemetry.update();
+        }
 
         // Wait for the game to start (driver presses START)
         telemetry.addData("Status", "Initialized");
@@ -80,12 +96,16 @@ public class TPK_Headless_OPMode extends LinearOpMode {
 
         // run until the end of the match (driver presses STOP)
         while (opModeIsActive()) {
+            try {
+                pinpoint.update();
+            } catch (Exception ignored) {}
+
             double max;
 
             // Get current values
-            double heading = pinpoint.getHeading(AngleUnit.RADIANS);
+            double heading = pinpoint.getHeading(AngleUnit.RADIANS) - Math.toRadians(90);
             double lsy     = -gamepad1.left_stick_y;
-            double lsx     =  gamepad1.left_stick_x;
+            double lsx     = -gamepad1.left_stick_x;
             double rsx     =  gamepad1.right_stick_x;
 
             // Rotate joystick input
@@ -118,8 +138,8 @@ public class TPK_Headless_OPMode extends LinearOpMode {
             backRightDrive.setPower(backRightPower);
 
             if (gamepad1.left_bumper) {
-                leftFlywheel.setPower(100);
-                rightFlywheel.setPower(100);
+                leftFlywheel.setPower(1);
+                rightFlywheel.setPower(1);
             } else {
                 leftFlywheel.setPower(0);
                 rightFlywheel.setPower(0);
@@ -129,6 +149,7 @@ public class TPK_Headless_OPMode extends LinearOpMode {
             telemetry.addData("Status", "Run Time: " + runtime.toString());
             telemetry.addData("Front left/Right", "%4.2f, %4.2f", frontLeftPower, frontRightPower);
             telemetry.addData("Back  left/Right", "%4.2f, %4.2f", backLeftPower, backRightPower);
+            telemetry.addData("Heading", "%f", heading);
             telemetry.update();
         }
     }}
