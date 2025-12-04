@@ -13,6 +13,7 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 public class Drivetrain {
     private final DcMotor frontLeft, frontRight, backLeft, backRight;
 
+    // Class constructor
     public Drivetrain(DcMotor frontLeft, DcMotor frontRight, DcMotor backLeft, DcMotor backRight) {
         this.frontLeft = frontLeft;
         this.frontRight = frontRight;
@@ -25,6 +26,7 @@ public class Drivetrain {
         backRight.setDirection(DcMotor.Direction.REVERSE);
     }
 
+    // Drive from axial lateral yaw input
     public void drive(float forward, float strafe, float turn) {
         float fl = forward + strafe + turn;
         float fr = forward - strafe - turn;
@@ -40,12 +42,13 @@ public class Drivetrain {
         backRight.setPower(br / max);
     }
 
+    // Drive with axial targetTheta input
     public void driveLocked(float power, float targetTheta, float currentTheta) {
         double currentRad = Math.toRadians(currentTheta);
         double targetRad = Math.toRadians(targetTheta);
 
         float forward = (float)(power * Math.cos(targetRad - currentRad));
-        float strafe = (float)(power * Math.sin(targetRad - currentRad));
+        float strafe = (float)(-power * Math.sin(targetRad - currentRad));
 
         drive(forward, strafe, 0);
     }

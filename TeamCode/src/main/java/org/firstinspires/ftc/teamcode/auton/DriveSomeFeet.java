@@ -56,11 +56,6 @@ public class DriveSomeFeet extends LinearOpMode {
             return;
         }
 
-        double headingRadAdj = odometry.getHeadingRadians();
-        telemetry.addData("HeadingRad", "%f", headingRadAdj);
-        telemetry.addData("HeadingDeg", "%f", Math.toDegrees(headingRadAdj));
-        telemetry.update();
-
         // Put Code Here
         chassis.setPose(0, 0, 0);
         chassis.driveToPose(0, 48, 0, 5000);

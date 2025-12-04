@@ -46,6 +46,7 @@ public class AutonTemplate extends LinearOpMode {
             Thread.currentThread().interrupt();
         }
 
+        // Verify odometry is there before calling motion commands! abort if not found
         if (!odometry.hasPinpoint()) {
             telemetry.addData("OdomComputer", "Not Found. Abort Auton.");
             telemetry.update();
@@ -53,10 +54,6 @@ public class AutonTemplate extends LinearOpMode {
             return;
         }
 
-        double headingRadAdj = odometry.getHeadingRadians();
-        telemetry.addData("HeadingRad", "%f", headingRadAdj);
-        telemetry.addData("HeadingDeg", "%f", Math.toDegrees(headingRadAdj));
-        telemetry.update();
         // Put Code Here
     }
 }

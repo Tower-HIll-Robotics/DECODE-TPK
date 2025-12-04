@@ -56,11 +56,6 @@ public class SmallBlue extends LinearOpMode {
             return;
         }
 
-        double headingRadAdj = odometry.getHeadingRadians();
-        telemetry.addData("HeadingRad", "%f", headingRadAdj);
-        telemetry.addData("HeadingDeg", "%f", Math.toDegrees(headingRadAdj));
-        telemetry.update();
-
         // Put Code Here
         chassis.setPose(63, -12, 270);
         chassis.driveToPose(-24, -24, 225, 7500);

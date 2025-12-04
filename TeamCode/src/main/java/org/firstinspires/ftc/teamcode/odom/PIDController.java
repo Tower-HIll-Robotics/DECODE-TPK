@@ -15,6 +15,7 @@ public class PIDController {
     private double previousError = 0;
     private long lastTime = 0;
 
+    // Class constructor
     public PIDController(double kP, double kI, double kD) {
         this.kP = kP;
         this.kI = kI;
@@ -22,12 +23,14 @@ public class PIDController {
         lastTime = System.nanoTime();
     }
 
+    // Reset integral to avoid windup (that's no good)
     public void resetIntegral() {
         integral = 0;
         previousError = 0;
         lastTime = System.nanoTime();
     }
 
+    // Calculate current power level (must run continuously for integral and derivative)
     public double calculate(double error) {
         long now = System.nanoTime();
         double dt = (now - lastTime) / 1e9;

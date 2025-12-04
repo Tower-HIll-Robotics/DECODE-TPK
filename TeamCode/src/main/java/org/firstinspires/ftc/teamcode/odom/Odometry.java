@@ -23,6 +23,7 @@ public class Odometry {
     private volatile double theta = 0;
     private volatile Pose2D position = null;
 
+    // Class Constructor
     public Odometry(HardwareMap hwMap) {
         try {
             pinpoint = hwMap.get(GoBildaPinpointDriver.class, "pinpoint");
@@ -31,6 +32,7 @@ public class Odometry {
         }
     }
 
+    // Recalibrate Sensors
     public void calibrate() {
         if (pinpoint != null) {
             try {
@@ -39,6 +41,35 @@ public class Odometry {
         }
     }
 
+    // Wait to see if Odom gets a reading
+    public boolean waitForPosition(long timeoutMs) {
+        if (pinpoint == null) return false;
+        long start = System.currentTimeMillis();
+        while (System.currentTimeMillis() - start < timeoutMs) {
+            try {
+                pinpoint.update();
+                Pose2D pos = pinpoint.getPosition();
+                if (pos != null) {
+                    double rawX = pos.getX(DistanceUnit.INCH);
+                    double rawY = pos.getY(DistanceUnit.INCH);
+                    this.x = rawX;
+                    this.y = rawY;
+                    this.theta = pos.getHeading(AngleUnit.DEGREES) - 90.0;
+                    this.position = pos;
+                    return true;
+                }
+            } catch (Exception ignored) {}
+            try {
+                Thread.sleep(20);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                break;
+            }
+        }
+        return false;
+    }
+
+    // Return current position
     public float[] getPose() {
         if (pinpoint != null) {
             try {
@@ -48,44 +79,50 @@ public class Odometry {
                 if (pos != null) {
                     double xInches = pos.getX(DistanceUnit.INCH);
                     double yInches = pos.getY(DistanceUnit.INCH);
-                    double headingDeg = pos.getHeading(AngleUnit.DEGREES);
+                    double headingDeg = pos.getHeading(AngleUnit.DEGREES) - 90.0;
 
                     this.x = xInches;
                     this.y = yInches;
                     this.theta = headingDeg;
                     this.position = pos;
 
-                    return new float[] {(float) xInches, (float) yInches, (float) headingDeg};
+                    return new float[]{(float) xInches, (float) yInches, (float) headingDeg};
                 }
             } catch (Exception ignored) {}
         }
-        return new float[] {(float) x, (float) y, (float) theta};
+
+        return new float[]{(float) x, (float) y, (float) theta};
     }
 
+    // Sets the Pose DO NOT CALL THIS FROM OUTSIDE OF THE CHASSIS CLASS
     public void setPose(double x, double y, double theta) {
         this.x = x;
         this.y = y;
         this.theta = theta;
-        this.position = new Pose2D(DistanceUnit.INCH, x, y, AngleUnit.DEGREES, theta);
-
         if (pinpoint != null) {
             try {
-                Pose2D pose = new Pose2D(DistanceUnit.INCH, x, y, AngleUnit.DEGREES, theta);
+                double deviceTheta = theta + 90.0;
+                Pose2D pose = new Pose2D(DistanceUnit.INCH, x, y, AngleUnit.DEGREES, deviceTheta);
                 pinpoint.setPosition(pose);
+                this.position = pose;
             } catch (Exception ignored) {}
+        } else {
+            this.position = new Pose2D(DistanceUnit.INCH, x, y, AngleUnit.DEGREES, theta);
         }
     }
 
+    // Check if odom computer is present
     public boolean hasPinpoint() {
         return pinpoint != null;
     }
 
+    // Return current heading in Radians (Java Math uses Radians 🤮)
     public double getHeadingRadians() {
         if (pinpoint != null) {
             try {
                 return pinpoint.getHeading(AngleUnit.RADIANS) - Math.toRadians(90);
             } catch (Exception ignored) {}
         }
-        return Math.toRadians(this.theta) - Math.toRadians(90);
+        return Math.toRadians(this.theta);
     }
 }
