@@ -31,10 +31,18 @@ public class Chassis {
 
     public void initialize() {
         odometry.calibrate();
+        try {
+            Thread.sleep(300);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        }
+
         running = true;
         odometryThread = new Thread(() -> {
             while (running) {
-                updatePose();
+                try {
+                    updatePose();
+                } catch (Exception ignored) {}
                 try {
                     Thread.sleep(10);
                 } catch (InterruptedException e) {

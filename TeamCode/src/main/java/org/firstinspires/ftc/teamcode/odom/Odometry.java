@@ -16,7 +16,7 @@ import com.qualcomm.robotcore.hardware.HardwareMap;
  */
 
 public class Odometry {
-    private final GoBildaPinpointDriver pinpoint;
+    private GoBildaPinpointDriver pinpoint = null;
 
     private volatile double x = 0;
     private volatile double y = 0;
@@ -24,38 +24,68 @@ public class Odometry {
     private volatile Pose2D position = null;
 
     public Odometry(HardwareMap hwMap) {
-        pinpoint = hwMap.get(GoBildaPinpointDriver.class, "pinpoint");
+        try {
+            pinpoint = hwMap.get(GoBildaPinpointDriver.class, "pinpoint");
+        } catch (Exception ignored) {
+            pinpoint = null;
+        }
     }
 
     public void calibrate() {
-        pinpoint.resetPosAndIMU();
+        if (pinpoint != null) {
+            try {
+                pinpoint.resetPosAndIMU();
+            } catch (Exception ignored) {}
+        }
     }
 
     public float[] getPose() {
-        Pose2D pos = pinpoint.getPosition();
+        if (pinpoint != null) {
+            try {
+                pinpoint.update();
+                Pose2D pos = pinpoint.getPosition();
 
-        if (pos == null) {
-            return new float[] {(float) x, (float) y, (float) theta};
+                if (pos != null) {
+                    double xInches = pos.getX(DistanceUnit.INCH);
+                    double yInches = pos.getY(DistanceUnit.INCH);
+                    double headingDeg = pos.getHeading(AngleUnit.DEGREES);
+
+                    this.x = xInches;
+                    this.y = yInches;
+                    this.theta = headingDeg;
+                    this.position = pos;
+
+                    return new float[] {(float) xInches, (float) yInches, (float) headingDeg};
+                }
+            } catch (Exception ignored) {}
         }
-
-        double xInches = pos.getX(DistanceUnit.INCH);
-        double yInches = pos.getY(DistanceUnit.INCH);
-        double headingDeg = pos.getHeading(AngleUnit.DEGREES);
-
-        this.x = xInches;
-        this.y = yInches;
-        this.theta = headingDeg;
-        this.position = pos;
-
-        return new float[] {(float) xInches, (float) yInches, (float) headingDeg};
+        return new float[] {(float) x, (float) y, (float) theta};
     }
 
     public void setPose(double x, double y, double theta) {
-        Pose2D pose = new Pose2D(DistanceUnit.INCH, x, y, AngleUnit.DEGREES, theta);
-        pinpoint.setPosition(pose);
         this.x = x;
         this.y = y;
         this.theta = theta;
-        this.position = pose;
+        this.position = new Pose2D(DistanceUnit.INCH, x, y, AngleUnit.DEGREES, theta);
+
+        if (pinpoint != null) {
+            try {
+                Pose2D pose = new Pose2D(DistanceUnit.INCH, x, y, AngleUnit.DEGREES, theta);
+                pinpoint.setPosition(pose);
+            } catch (Exception ignored) {}
+        }
+    }
+
+    public boolean hasPinpoint() {
+        return pinpoint != null;
+    }
+
+    public double getHeadingRadians() {
+        if (pinpoint != null) {
+            try {
+                return pinpoint.getHeading(AngleUnit.RADIANS) - Math.toRadians(90);
+            } catch (Exception ignored) {}
+        }
+        return Math.toRadians(this.theta) - Math.toRadians(90);
     }
 }
