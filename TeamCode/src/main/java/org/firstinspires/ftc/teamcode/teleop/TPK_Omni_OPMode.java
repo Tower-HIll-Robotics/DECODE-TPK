@@ -46,6 +46,8 @@ public class TPK_Omni_OPMode extends LinearOpMode {
     private DcMotor leftFlywheel = null;
     private DcMotor rightFlywheel = null;
     private DcMotor intake = null;
+    private DcMotor intakeIntermediate = null;
+
 
     @Override
     public void runOpMode() {
@@ -67,6 +69,7 @@ public class TPK_Omni_OPMode extends LinearOpMode {
         leftFlywheel.setDirection(DcMotor.Direction.REVERSE);
         rightFlywheel.setDirection(DcMotor.Direction.FORWARD);
         intake.setDirection(DcMotor.Direction.FORWARD);
+        intakeIntermediate.setDirection(DcMotor.Direction.REVERSE);
 
         // Wait for the game to start (driver presses START)
         telemetry.addData("Status", "Initialized");
@@ -121,12 +124,16 @@ public class TPK_Omni_OPMode extends LinearOpMode {
 
             if (gamepad2.dpad_down) {
                 intake.setPower(1);
+                intakeIntermediate.setPower(1);
             }
             if (gamepad2.dpad_up) {
                 intake.setPower(-1);
+                intakeIntermediate.setPower(-1);
+
             }
             if (!(gamepad1.dpad_up || gamepad2.dpad_down)) {
                 intake.setPower(0);
+                intakeIntermediate.setPower(0);
             }
 
             // Show the elapsed game time and wheel power.

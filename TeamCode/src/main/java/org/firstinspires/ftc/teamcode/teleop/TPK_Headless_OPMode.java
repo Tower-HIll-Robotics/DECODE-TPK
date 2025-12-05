@@ -48,6 +48,7 @@ public class TPK_Headless_OPMode extends LinearOpMode {
     private DcMotor leftFlywheel = null;
     private DcMotor rightFlywheel = null;
     private DcMotor intake = null;
+    private DcMotor intakeIntermediate = null;
 
     private GoBildaPinpointDriver pinpoint = null;
 
@@ -63,6 +64,7 @@ public class TPK_Headless_OPMode extends LinearOpMode {
         leftFlywheel = hardwareMap.get(DcMotor.class, "left_flywheel");
         rightFlywheel = hardwareMap.get(DcMotor.class, "right_flywheel");
         intake = hardwareMap.get(DcMotor.class, "intake");
+        intakeIntermediate = hardwareMap.get(DcMotor.class, "intakeIntermediate");
         pinpoint = hardwareMap.get(GoBildaPinpointDriver.class, "pinpoint");
 
         if (pinpoint == null) {
@@ -78,6 +80,7 @@ public class TPK_Headless_OPMode extends LinearOpMode {
         leftFlywheel.setDirection(DcMotor.Direction.REVERSE);
         rightFlywheel.setDirection(DcMotor.Direction.FORWARD);
         intake.setDirection(DcMotor.Direction.FORWARD);
+        intakeIntermediate.setDirection(DcMotor.Direction.REVERSE);
 
         // Reset the pinpoint position and IMU (recommended by the sample) instead of
         // calling recalibrateIMU()/setHeading which may be asynchronous.
@@ -151,12 +154,16 @@ public class TPK_Headless_OPMode extends LinearOpMode {
 
             if (gamepad2.dpad_down) {
                 intake.setPower(1);
+                intakeIntermediate.setPower(1);
             }
             if (gamepad2.dpad_up) {
                 intake.setPower(-1);
+                intakeIntermediate.setPower(-1);
+
             }
             if (!(gamepad1.dpad_up || gamepad2.dpad_down)) {
                 intake.setPower(0);
+                intakeIntermediate.setPower(0);
             }
 
             // Show the elapsed game time and wheel power.
