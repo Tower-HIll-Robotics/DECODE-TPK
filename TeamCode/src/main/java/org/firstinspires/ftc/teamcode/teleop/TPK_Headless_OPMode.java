@@ -47,6 +47,7 @@ public class TPK_Headless_OPMode extends LinearOpMode {
     private DcMotor backRightDrive = null;
     private DcMotor leftFlywheel = null;
     private DcMotor rightFlywheel = null;
+    private DcMotor intake = null;
 
     private GoBildaPinpointDriver pinpoint = null;
 
@@ -61,6 +62,7 @@ public class TPK_Headless_OPMode extends LinearOpMode {
         backRightDrive = hardwareMap.get(DcMotor.class, "back_right_drive");
         leftFlywheel = hardwareMap.get(DcMotor.class, "left_flywheel");
         rightFlywheel = hardwareMap.get(DcMotor.class, "right_flywheel");
+        intake = hardwareMap.get(DcMotor.class, "intake");
         pinpoint = hardwareMap.get(GoBildaPinpointDriver.class, "pinpoint");
 
         if (pinpoint == null) {
@@ -75,6 +77,7 @@ public class TPK_Headless_OPMode extends LinearOpMode {
         backRightDrive.setDirection(DcMotor.Direction.REVERSE);
         leftFlywheel.setDirection(DcMotor.Direction.REVERSE);
         rightFlywheel.setDirection(DcMotor.Direction.FORWARD);
+        intake.setDirection(DcMotor.Direction.FORWARD);
 
         // Reset the pinpoint position and IMU (recommended by the sample) instead of
         // calling recalibrateIMU()/setHeading which may be asynchronous.
@@ -137,12 +140,23 @@ public class TPK_Headless_OPMode extends LinearOpMode {
             backLeftDrive.setPower(backLeftPower);
             backRightDrive.setPower(backRightPower);
 
-            if (gamepad1.left_bumper) {
+
+            if (gamepad2.a || gamepad2.b || gamepad2.x || gamepad2.y) {
                 leftFlywheel.setPower(1);
                 rightFlywheel.setPower(1);
             } else {
                 leftFlywheel.setPower(0);
                 rightFlywheel.setPower(0);
+            }
+
+            if (gamepad2.dpad_down) {
+                intake.setPower(1);
+            }
+            if (gamepad2.dpad_up) {
+                intake.setPower(-1);
+            }
+            if (!(gamepad1.dpad_up || gamepad2.dpad_down)) {
+                intake.setPower(0);
             }
 
             // Show the elapsed game time and wheel power.

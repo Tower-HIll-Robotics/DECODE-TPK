@@ -45,6 +45,7 @@ public class TPK_Omni_OPMode extends LinearOpMode {
     private DcMotor backRightDrive = null;
     private DcMotor leftFlywheel = null;
     private DcMotor rightFlywheel = null;
+    private DcMotor intake = null;
 
     @Override
     public void runOpMode() {
@@ -57,6 +58,7 @@ public class TPK_Omni_OPMode extends LinearOpMode {
         backRightDrive = hardwareMap.get(DcMotor.class, "back_right_drive");
         leftFlywheel = hardwareMap.get(DcMotor.class, "left_flywheel");
         rightFlywheel = hardwareMap.get(DcMotor.class, "right_flywheel");
+        intake = hardwareMap.get(DcMotor.class, "intake");
 
         frontLeftDrive.setDirection(DcMotor.Direction.REVERSE);
         backLeftDrive.setDirection(DcMotor.Direction.FORWARD);
@@ -64,6 +66,7 @@ public class TPK_Omni_OPMode extends LinearOpMode {
         backRightDrive.setDirection(DcMotor.Direction.REVERSE);
         leftFlywheel.setDirection(DcMotor.Direction.REVERSE);
         rightFlywheel.setDirection(DcMotor.Direction.FORWARD);
+        intake.setDirection(DcMotor.Direction.FORWARD);
 
         // Wait for the game to start (driver presses START)
         telemetry.addData("Status", "Initialized");
@@ -77,16 +80,16 @@ public class TPK_Omni_OPMode extends LinearOpMode {
             double max;
 
             // POV Mode uses left joystick to go forward & strafe, and right joystick to rotate.
-            double axial   = -gamepad1.left_stick_y;  // Note: pushing stick forward gives negative value
-            double lateral =  gamepad1.left_stick_x;
-            double yaw     =  gamepad1.right_stick_x;
+            double axial = -gamepad1.left_stick_y;  // Note: pushing stick forward gives negative value
+            double lateral = gamepad1.left_stick_x;
+            double yaw = gamepad1.right_stick_x;
 
             // Combine the joystick requests for each axis-motion to determine each wheel's power.
             // Set up a variable for each drive wheel to save the power level for telemetry.
-            double frontLeftPower  = axial + lateral + yaw;
+            double frontLeftPower = axial + lateral + yaw;
             double frontRightPower = axial - lateral - yaw;
-            double backLeftPower   = axial - lateral + yaw;
-            double backRightPower  = axial + lateral - yaw;
+            double backLeftPower = axial - lateral + yaw;
+            double backRightPower = axial + lateral - yaw;
 
             // Normalize the values so no wheel power exceeds 100%
             // This ensures that the robot maintains the desired motion.
@@ -95,10 +98,10 @@ public class TPK_Omni_OPMode extends LinearOpMode {
             max = Math.max(max, Math.abs(backRightPower));
 
             if (max > 1.0) {
-                frontLeftPower  /= max;
+                frontLeftPower /= max;
                 frontRightPower /= max;
-                backLeftPower   /= max;
-                backRightPower  /= max;
+                backLeftPower /= max;
+                backRightPower /= max;
             }
 
             // Send calculated power to wheels
@@ -107,12 +110,23 @@ public class TPK_Omni_OPMode extends LinearOpMode {
             backLeftDrive.setPower(backLeftPower);
             backRightDrive.setPower(backRightPower);
 
-            if (gamepad1.left_bumper) {
+
+            if (gamepad2.a || gamepad2.b || gamepad2.x || gamepad2.y) {
                 leftFlywheel.setPower(1);
                 rightFlywheel.setPower(1);
             } else {
                 leftFlywheel.setPower(0);
                 rightFlywheel.setPower(0);
+            }
+
+            if (gamepad2.dpad_down) {
+                intake.setPower(1);
+            }
+            if (gamepad2.dpad_up) {
+                intake.setPower(-1);
+            }
+            if (!(gamepad1.dpad_up || gamepad2.dpad_down)) {
+                intake.setPower(0);
             }
 
             // Show the elapsed game time and wheel power.
@@ -121,4 +135,5 @@ public class TPK_Omni_OPMode extends LinearOpMode {
             telemetry.addData("Back  left/Right", "%4.2f, %4.2f", backLeftPower, backRightPower);
             telemetry.update();
         }
-    }}
+    }
+}

@@ -81,7 +81,7 @@ public class Chassis {
     // Drive to a specified X, Y, Theta coordinate.
     public void driveToPose(float targetX, float targetY, float targetTheta, int timeout) {
         turnToHeading(angleToTarget(targetX, targetY), timeout);
-        driveToPoint(targetX, targetY, timeout, true);
+        driveToPoint(targetX, targetY, timeout, false);
         turnToHeading(targetTheta, timeout);
     }
 
@@ -91,8 +91,8 @@ public class Chassis {
         lateralPID.resetIntegral();
 
         while (System.currentTimeMillis() - startTime < timeout) {
-            float distanceX = targetX - x;
-            float distanceY = targetY - y;
+            float distanceX = targetX - this.x;
+            float distanceY = targetY - this.y;
             float lateralError = (float)Math.hypot(distanceX, distanceY);
             if (lateralError < 1.0) {
                 break;
@@ -165,15 +165,15 @@ public class Chassis {
     // Get current position from odom
     private void updatePose() {
         float[] pose = odometry.getPose();
-        x = pose[0];
-        y = pose[1];
-        theta = pose[2];
+        this.x = pose[0];
+        this.y = pose[1];
+        this.theta = pose[2];
     }
 
     // Align to drive straight to coordinate with atan2
     private float angleToTarget(float targetX, float targetY) {
-        float distanceX = targetX - x;
-        float distanceY = targetY - y;
+        float distanceX = targetX - this.x;
+        float distanceY = targetY - this.y;
         return (float)Math.toDegrees(Math.atan2(distanceY, distanceX)) - 90.0f;
     }
 
