@@ -61,6 +61,7 @@ public class TPK_Omni_OPMode extends LinearOpMode {
         leftFlywheel = hardwareMap.get(DcMotor.class, "left_flywheel");
         rightFlywheel = hardwareMap.get(DcMotor.class, "right_flywheel");
         intake = hardwareMap.get(DcMotor.class, "intake");
+        intakeIntermediate = hardwareMap.get(DcMotor.class, "intakeIntermediate");
 
         frontLeftDrive.setDirection(DcMotor.Direction.REVERSE);
         backLeftDrive.setDirection(DcMotor.Direction.FORWARD);
@@ -117,10 +118,16 @@ public class TPK_Omni_OPMode extends LinearOpMode {
             if (gamepad2.a || gamepad2.b || gamepad2.x || gamepad2.y) {
                 leftFlywheel.setPower(1);
                 rightFlywheel.setPower(1);
-            } else {
+            }
+            if (gamepad2.right_bumper) {
+                leftFlywheel.setPower(-1);
+                rightFlywheel.setPower(-1);
+            }
+            if (!((gamepad2.a || gamepad2.b || gamepad2.x || gamepad2.y) || (gamepad2.right_bumper))) {
                 leftFlywheel.setPower(0);
                 rightFlywheel.setPower(0);
             }
+
 
             if (gamepad2.dpad_down) {
                 intake.setPower(1);

@@ -147,7 +147,12 @@ public class TPK_Headless_OPMode extends LinearOpMode {
             if (gamepad2.a || gamepad2.b || gamepad2.x || gamepad2.y) {
                 leftFlywheel.setPower(1);
                 rightFlywheel.setPower(1);
-            } else {
+            }
+            if (gamepad2.right_bumper) {
+                leftFlywheel.setPower(-1);
+                rightFlywheel.setPower(-1);
+            }
+            if (!((gamepad2.a || gamepad2.b || gamepad2.x || gamepad2.y) || (gamepad2.right_bumper))) {
                 leftFlywheel.setPower(0);
                 rightFlywheel.setPower(0);
             }
